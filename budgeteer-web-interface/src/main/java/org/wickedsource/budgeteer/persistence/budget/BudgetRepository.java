@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.wickedsource.budgeteer.service.notification.MissingContractForBudgetNotification;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BudgetRepository extends CrudRepository<BudgetEntity, Long> {
 

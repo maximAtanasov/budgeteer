@@ -7,7 +7,6 @@ buildscript {
 
     dependencies {
         classpath group: 'org.springframework.boot', name: 'spring-boot-gradle-plugin', version: "${spring_boot_version}"
-        classpath group: 'org.springframework', name: 'springloaded', version: "${springloaded_version}"
     }
 }
 
@@ -60,7 +59,7 @@ dependencies {
             [group: 'org.apache.wicket', name: 'wicket-extensions', version: "${wicket_spring_version}"],
             [group: 'org.wicketstuff', name: 'wicketstuff-lazymodel', version: "${wicketstuff_lazymodel_version}"],
             [group: 'org.wicketstuff', name: 'wicketstuff-tinymce4', version: "${wicketstuff_tinymce4_version}"],
-            [group: 'de.adesso.wicked-charts', name: 'wicked-charts-wicket7', version: "${wicketcharts_version}"]
+            [group: 'de.adesso.wicked-charts', name: 'wicked-charts-wicket7', version: "${wickedcharts_version}"]
     )
 
     compile group: 'org.springframework', name: 'spring-webmvc', version: "${spring_version}"
@@ -108,8 +107,8 @@ dependencies {
             [group: 'com.github.springtestdbunit', name: 'spring-test-dbunit', version: "${spring_dbunit_version}"],
             [group: 'org.dbunit', name: 'dbunit', version: "${dbunit_version}"],
     )
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "${spring_boot_version}"
 
-    testCompile "org.springframework.boot:spring-boot-starter-test"
     testCompile group: 'org.springframework.security', name: 'spring-security-test', version: "${spring_security_test_version}"
 
     testCompile('org.junit.platform:junit-platform-launcher:1.0.3')
