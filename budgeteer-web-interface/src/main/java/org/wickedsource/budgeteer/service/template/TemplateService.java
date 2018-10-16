@@ -97,10 +97,10 @@ public class TemplateService {
      * @param templateID The ID of the template.
      */
     public void deleteTemplate(long templateID){
-        templateRepository.delete(templateID);
+        templateRepository.deleteById(templateID);
     }
 
-    public void resolveDefaults(long templateId, IModel<TemplateFormInputDto> temModel){
+    private void resolveDefaults(long templateId, IModel<TemplateFormInputDto> temModel){
         if(temModel.getObject().isDefault()){
             for(TemplateEntity E : templateRepository.findAll()){
                 if(E.getType() == temModel.getObject().getType() && E.getId() != templateId){

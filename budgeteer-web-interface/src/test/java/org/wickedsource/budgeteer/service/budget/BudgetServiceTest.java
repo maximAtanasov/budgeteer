@@ -44,7 +44,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
 
     @Test
     void testLoadBudgetBaseDataForProject() {
-        when(budgetRepository.findByProjectIdOrderByNameAsc(1L)).thenReturn(Arrays.asList(createBudgetEntity()));
+        when(budgetRepository.findByProjectIdOrderByNameAsc(1L)).thenReturn(Collections.singletonList(createBudgetEntity()));
         List<BudgetBaseData> budgets = budgetService.loadBudgetBaseDataForProject(1L);
         Assertions.assertEquals(1, budgets.size());
         Assertions.assertEquals(1, budgets.get(0).getId());
@@ -53,7 +53,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
 
     @Test
     void testLoadBudgetBaseData() {
-        when(budgetRepository.findOne(1L)).thenReturn(createBudgetEntity());
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(createBudgetEntity()));
         BudgetBaseData data = budgetService.loadBudgetBaseData(1L);
         Assertions.assertEquals(1L, data.getId());
         Assertions.assertEquals("Budget 123", data.getName());
@@ -74,7 +74,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
     @Test
     void testLoadBudgetDetailData() {
         Date date = new Date();
-        when(budgetRepository.findOne(1L)).thenReturn(createBudgetEntity());
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(createBudgetEntity()));
         when(workRecordRepository.getLatestWorkRecordDate(1L)).thenReturn(date);
         when(workRecordRepository.getSpentBudget(1L)).thenReturn(100000.0);
         when(planRecordRepository.getPlannedBudget(1L)).thenReturn(200000.0);
@@ -88,7 +88,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
     @Test
     void testLoadBudgetsDetailData() {
         Date date = new Date();
-        when(budgetRepository.findByAtLeastOneTag(1L, Arrays.asList("1", "2", "3"))).thenReturn(Arrays.asList(createBudgetEntity()));
+        when(budgetRepository.findByAtLeastOneTag(1L, Arrays.asList("1", "2", "3"))).thenReturn(Collections.singletonList(createBudgetEntity()));
         when(workRecordRepository.getLatestWorkRecordDate(1L)).thenReturn(date);
         when(workRecordRepository.getSpentBudget(1L)).thenReturn(100000.0);
         when(planRecordRepository.getPlannedBudget(1L)).thenReturn(200000.0);
@@ -103,10 +103,10 @@ class BudgetServiceTest extends ServiceTestTemplate {
     @Test
     void testLoadBudgetToEdit() {
         BudgetEntity budget = createBudgetEntity();
-        when(budgetRepository.findOne(1L)).thenReturn(budget);
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(budget));
         EditBudgetData data = budgetService.loadBudgetToEdit(1L);
 
-        verify(budgetRepository, times(1)).findOne(1L);
+        verify(budgetRepository, times(1)).findById(1L);
         Assertions.assertEquals(budget.getTotal(), data.getTotal());
         Assertions.assertEquals(mapEntitiesToTags(budget.getTags()), data.getTags());
         Assertions.assertEquals(budget.getImportKey(), data.getImportKey());
@@ -121,7 +121,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
     @Test
     void testSaveBudget() {
         BudgetEntity budget = createBudgetEntity();
-        when(budgetRepository.findOne(1L)).thenReturn(budget);
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(budget));
 
         EditBudgetData data = getEditBudgetEntity();
 
@@ -140,10 +140,10 @@ class BudgetServiceTest extends ServiceTestTemplate {
     @Test
     void testSaveBudgetWithContract() {
         BudgetEntity budget = createBudgetEntity();
-        when(budgetRepository.findOne(1L)).thenReturn(budget);
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(budget));
 
         ContractEntity contractEntity = createContract();
-        when(contractRepository.findOne(1L)).thenReturn(contractEntity);
+        when(contractRepository.findById(1L)).thenReturn(Optional.ofNullable(contractEntity));
 
         EditBudgetData data = new EditBudgetData();
         data.setId(1L);
@@ -187,7 +187,7 @@ class BudgetServiceTest extends ServiceTestTemplate {
     void shouldThrowExceptionWhenConstraintIsViolated() {
         given(budgetRepository.save(Mockito.any(BudgetEntity.class)))
                 .willThrow(new DataIntegrityViolationException("constraint violation"));
-        when(budgetRepository.findOne(1L)).thenReturn(createBudgetEntity());
+        when(budgetRepository.findById(1L)).thenReturn(Optional.ofNullable(createBudgetEntity()));
 
         Assertions.assertThrows(DataIntegrityViolationException.class,
                 () -> budgetService.saveBudget(createBudgetEditEntity()),

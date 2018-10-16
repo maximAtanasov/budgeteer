@@ -50,7 +50,7 @@ public class BudgetEntity implements Comparable<BudgetEntity> {
     @JoinColumn(name = "PROJECT_ID")
     private ProjectEntity project;
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "budget")
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "budget")
     private List<BudgetTagEntity> tags = new ArrayList<BudgetTagEntity>();
 
     @OneToMany(mappedBy = "budget", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

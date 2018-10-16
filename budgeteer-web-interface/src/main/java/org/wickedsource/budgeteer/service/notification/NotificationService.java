@@ -12,10 +12,13 @@ import org.wickedsource.budgeteer.persistence.record.PlanRecordRepository;
 import org.wickedsource.budgeteer.persistence.record.WorkRecordRepository;
 import org.wickedsource.budgeteer.persistence.user.UserEntity;
 import org.wickedsource.budgeteer.persistence.user.UserRepository;
+import org.wickedsource.budgeteer.service.UnknownEntityException;
+
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -74,8 +77,9 @@ public class NotificationService {
             }
         }
 
-        UserEntity user = userRepository.findOne(userId);
-        if (user != null) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (userOptional.isPresent()) {
+            UserEntity user = userOptional.get();
             if (user.getMail() == null) {
                 notifications.add(new MissingMailNotification(user.getId()));
             }
@@ -84,7 +88,6 @@ public class NotificationService {
                 notifications.add(new MailNotVerifiedNotification(user.getId(), user.getMail()));
             }
         }
-
         return notifications;
     }
 

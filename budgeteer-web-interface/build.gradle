@@ -51,7 +51,7 @@ dependencies {
     compile project(':budgeteer-ubw-importer')
     compile project(':budgeteer-resourceplan-importer')
     compile project(':budgeteer-report-exporter')
-
+    
     compile(group: 'org.springframework', name: 'spring-web', version: "${spring_version}")
 
     compile(
@@ -59,8 +59,11 @@ dependencies {
             [group: 'org.apache.wicket', name: 'wicket-extensions', version: "${wicket_spring_version}"],
             [group: 'org.wicketstuff', name: 'wicketstuff-lazymodel', version: "${wicketstuff_lazymodel_version}"],
             [group: 'org.wicketstuff', name: 'wicketstuff-tinymce4', version: "${wicketstuff_tinymce4_version}"],
-            [group: 'de.adesso.wicked-charts', name: 'wicked-charts-wicket7', version: "${wickedcharts_version}"]
     )
+    
+    compile('de.adesso.wicked-charts:wicked-charts-wicket7:3.1.0'){
+        exclude group: 'javax.servlet', module: 'javax.servlet-api';
+    }
 
     compile group: 'org.springframework', name: 'spring-webmvc', version: "${spring_version}"
     compile(
@@ -70,7 +73,10 @@ dependencies {
             [group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: "${spring_boot_version}"],
             [group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: "${spring_boot_version}"],
     )
+
     providedCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-tomcat', version: "${spring_boot_version}")
+
+
 
     compile group: 'org.slf4j', name: 'slf4j-api', version: "${slf4j_version}"
     compile group: 'ch.qos.logback', name: 'logback-classic', version: "${logback_version}"

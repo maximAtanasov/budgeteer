@@ -10,11 +10,9 @@ import org.wickedsource.budgeteer.persistence.person.PersonEntity;
 import org.wickedsource.budgeteer.persistence.person.PersonRepository;
 import org.wickedsource.budgeteer.persistence.project.ProjectEntity;
 import org.wickedsource.budgeteer.persistence.project.ProjectRepository;
+import org.wickedsource.budgeteer.service.UnknownEntityException;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class RecordDatabaseImporter {
 
@@ -48,7 +46,11 @@ public abstract class RecordDatabaseImporter {
     }
 
     public void init() {
-        project = projectRepository.findOne(projectId);
+        Optional<ProjectEntity> projectOptional = projectRepository.findById(projectId);
+        if (!projectOptional.isPresent()) {
+            throw new UnknownEntityException(ProjectEntity.class, projectId);
+        }
+        project = projectOptional.get();
         budgetsByImportKey = getBudgetCache(projectId);
         personsByImportKey = getPersonCache(projectId);
 

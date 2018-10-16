@@ -12,6 +12,7 @@ import org.wickedsource.budgeteer.persistence.invoice.InvoiceRepository;
 import org.wickedsource.budgeteer.persistence.project.ProjectContractField;
 import org.wickedsource.budgeteer.persistence.project.ProjectEntity;
 import org.wickedsource.budgeteer.persistence.project.ProjectRepository;
+import org.wickedsource.budgeteer.service.UnknownEntityException;
 import org.wickedsource.budgeteer.web.pages.contract.overview.table.ContractOverviewTableModel;
 
 import javax.transaction.Transactional;
@@ -46,35 +47,47 @@ public class ContractService {
 
     @PreAuthorize("canReadContract(#contractId)")
     public ContractBaseData getContractById(long contractId) {
-        return mapper.map(contractRepository.findOne(contractId));
+        Optional<ContractEntity> contractOptional = contractRepository.findById(contractId);
+        return contractOptional.map(contractEntity -> mapper.map(contractEntity)).orElse(null);
     }
 
     @PreAuthorize("canReadProject(#projectId)")
     public List<ContractBaseData> getContractsByProject(long projectId) {
-        List<ContractEntity> contracts = new LinkedList<ContractEntity>();
-        contracts.addAll(contractRepository.findByProjectId(projectId));
+        List<ContractEntity> contracts = new LinkedList<>(contractRepository.findByProjectId(projectId));
         return mapper.map(contracts);
     }
 
     @PreAuthorize("canReadProject(#projectId)")
     public ContractBaseData getEmptyContractModel(long projectId){
-        ProjectEntity project = projectRepository.findOne(projectId);
+        Optional<ProjectEntity> project = projectRepository.findById(projectId);
         ContractBaseData model = new ContractBaseData(projectId);
-        Set<ProjectContractField> fields = project.getContractFields();
-        for(ProjectContractField field : fields){
-            model.getContractAttributes().add(new DynamicAttributeField(field.getFieldName(), ""));
+        if (project.isPresent()) {
+            Set<ProjectContractField> fields = project.get().getContractFields();
+            for(ProjectContractField field : fields){
+                model.getContractAttributes().add(new DynamicAttributeField(field.getFieldName(), ""));
+            }
+            return model;
+        } else {
+            throw new UnknownEntityException(ProjectEntity.class, projectId);
         }
-        return model;
     }
 
     public long save(ContractBaseData contractBaseData) {
-        ProjectEntity project = projectRepository.findOne(contractBaseData.getProjectId());
+        Optional<ProjectEntity> project = projectRepository.findById(contractBaseData.getProjectId());
         ContractEntity contractEntity = new ContractEntity();
+        if (!project.isPresent()) {
+            throw new UnknownEntityException(ProjectEntity.class, contractBaseData.getProjectId());
+        }
         contractEntity.setId(0);
-        contractEntity.setProject(project);
+        contractEntity.setProject(project.get());
 
         if(contractBaseData.getContractId() != 0){
-            contractEntity = contractRepository.findOne(contractBaseData.getContractId());
+            Optional<ContractEntity> contractOptional = contractRepository.findById(contractBaseData.getContractId());
+            if (contractOptional.isPresent()) {
+                contractEntity = contractOptional.get();
+            } else {
+                throw new UnknownEntityException(ContractEntity.class, contractBaseData.getContractId());
+            }
         }
         //Update basic information
         contractEntity.setName(contractBaseData.getContractName());
@@ -108,7 +121,7 @@ public class ContractService {
                     // see if the Project already contains a field with this name. If not, create a new one
                     ProjectContractField projectContractField = projectRepository.findContractFieldByName(contractBaseData.getProjectId(), fields.getName().trim());
                     if (projectContractField == null) {
-                        projectContractField = new ProjectContractField(0, fields.getName().trim(), project);
+                        projectContractField = new ProjectContractField(0, fields.getName().trim(), project.get());
                     }
                     ContractFieldEntity field = new ContractFieldEntity();
                     field.setId(0);
@@ -129,18 +142,18 @@ public class ContractService {
         for (BudgetEntity budgetEntity : budgets) {
             budgetEntity.setContract(null);
         }
-        budgetRepository.save(budgets);
+        budgetRepository.saveAll(budgets);
 
         invoiceRepository.deleteInvoiceFieldsByContractId(contractId);
         invoiceRepository.deleteInvoicesByContractId(contractId);
 
-        contractRepository.delete(contractId);
+        contractRepository.deleteById(contractId);
     }
 
     @PreAuthorize("canReadContract(#contractId)")
     public List<Date> getMonthList(long contractId) {
         List<Date> months = new ArrayList<Date>();
-        ContractEntity contract = contractRepository.findById(contractId);
+        ContractEntity contract = contractRepository.findByIdInvoiceField(contractId);
         Calendar cal = Calendar.getInstance();
         cal.setTime(contract.getStartDate());
         Calendar currentDate = Calendar.getInstance();

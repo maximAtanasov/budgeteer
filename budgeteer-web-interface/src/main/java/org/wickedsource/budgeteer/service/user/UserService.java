@@ -13,6 +13,7 @@ import org.wickedsource.budgeteer.service.UnknownEntityException;
 import javax.transaction.Transactional;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -72,14 +73,16 @@ public class UserService {
      */
     @PreAuthorize("canReadProject(#projectId)")
     public void removeUserFromProject(long projectId, long userId) {
-        ProjectEntity project = projectRepository.findOne(projectId);
-        if (project == null) {
+        Optional<ProjectEntity> projectOptional = projectRepository.findById(projectId);
+        if (!projectOptional.isPresent()) {
             throw new UnknownEntityException(ProjectEntity.class, projectId);
         }
-        UserEntity user = userRepository.findOne(userId);
-        if (user == null) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
             throw new UnknownEntityException(UserEntity.class, userId);
         }
+        ProjectEntity project = projectOptional.get();
+        UserEntity user = userOptional.get();
         user.getAuthorizedProjects().remove(project);
         project.getAuthorizedUsers().remove(user);
     }
@@ -92,14 +95,16 @@ public class UserService {
      */
     @PreAuthorize("canReadProject(#projectId)")
     public void addUserToProject(long projectId, long userId) {
-        ProjectEntity project = projectRepository.findOne(projectId);
-        if (project == null) {
+        Optional<ProjectEntity> projectOptional = projectRepository.findById(projectId);
+        if (!projectOptional.isPresent()) {
             throw new UnknownEntityException(ProjectEntity.class, projectId);
         }
-        UserEntity user = userRepository.findOne(userId);
-        if (user == null) {
+        Optional<UserEntity> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
             throw new UnknownEntityException(UserEntity.class, userId);
         }
+        ProjectEntity project = projectOptional.get();
+        UserEntity user = userOptional.get();
         user.getAuthorizedProjects().add(project);
         project.getAuthorizedUsers().add(user);
     }
@@ -180,8 +185,11 @@ public class UserService {
      * @return true if the password matches the user, false if not
      */
     public boolean checkPassword(long id, String password) {
-        UserEntity entity = userRepository.findOne(id);
-        return entity.getPassword().equals(passwordHasher.hash(password));
+        Optional<UserEntity> entity = userRepository.findById(id);
+        if (!entity.isPresent()) {
+            throw new UnknownEntityException(UserEntity.class, id);
+        }
+        return entity.get().getPassword().equals(passwordHasher.hash(password));
     }
 
     /**
@@ -210,11 +218,12 @@ public class UserService {
      * @return EditUserData for editing the user
      */
     public EditUserData loadUserToEdit(long id) {
-        UserEntity userEntity = userRepository.findOne(id);
+        Optional<UserEntity> userEntityOptional = userRepository.findById(id);
 
-        if (userEntity == null)
+        if (!userEntityOptional.isPresent())
             throw new UnknownEntityException(UserEntity.class, id);
 
+        UserEntity userEntity = userEntityOptional.get();
         EditUserData editUserData = new EditUserData();
         editUserData.setId(userEntity.getId());
         editUserData.setName(userEntity.getName());
@@ -240,36 +249,42 @@ public class UserService {
      */
     public boolean saveUser(EditUserData data, boolean changePassword) throws UsernameAlreadyInUseException, MailAlreadyInUseException {
         assert data != null;
-        UserEntity userEntity = new UserEntity();
 
         UserEntity testEntity = userRepository.findByName(data.getName());
-        if (testEntity != null)
-            if (testEntity.getId() != data.getId())
+        if (testEntity != null) {
+            if (testEntity.getId() != data.getId()) {
                 throw new UsernameAlreadyInUseException();
-
+            }
+        }
         testEntity = userRepository.findByMail(data.getMail());
-        if (testEntity != null)
-            if (testEntity.getId() != data.getId())
+        if (testEntity != null) {
+            if (testEntity.getId() != data.getId()) {
                 throw new MailAlreadyInUseException();
+            }
+        }
 
-        userEntity = userRepository.findOne(data.getId());
+        Optional<UserEntity> userEntityOptional = userRepository.findById(data.getId());
+        if(!userEntityOptional.isPresent()) {
+            throw new UnknownEntityException(UserEntity.class, data.getId());
+        }
+        UserEntity userEntity = userEntityOptional.get();
 
-        testEntity = userRepository.findOne(data.getId());
-        if (testEntity != null)
-            if (testEntity.getMail() == null)
+        Optional<UserEntity> testEntity1 = userRepository.findById(data.getId());
+        if (testEntity1.isPresent())
+            if (testEntity1.get().getMail() == null)
                 userEntity.setMailVerified(false);
-            else if (!testEntity.getMail().equals(data.getMail()))
+            else if (!testEntity1.get().getMail().equals(data.getMail()))
                 userEntity.setMailVerified(false);
 
         userEntity.setId(data.getId());
         userEntity.setName(data.getName());
         userEntity.setMail(data.getMail());
 
-        if (changePassword)
+        if (changePassword) {
             userEntity.setPassword(passwordHasher.hash(data.getPassword()));
-        else
+        }else {
             userEntity.setPassword(data.getPassword());
-
+        }
         userRepository.save(userEntity);
 
         return userEntity.getMailVerified();
@@ -357,12 +372,12 @@ public class UserService {
      * @throws UserIdNotFoundException
      */
     public UserEntity getUserById(long id) throws UserIdNotFoundException {
-        UserEntity userEntity = userRepository.findOne(id);
+        Optional<UserEntity> userEntity = userRepository.findById(id);
 
-        if (userEntity == null)
+        if (!userEntity.isPresent())
             throw new UserIdNotFoundException();
         else
-            return userEntity;
+            return userEntity.get();
     }
 
     /**

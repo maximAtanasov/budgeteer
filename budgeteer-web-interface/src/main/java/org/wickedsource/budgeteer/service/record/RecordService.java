@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.wickedsource.budgeteer.ListUtil;
 import org.wickedsource.budgeteer.persistence.record.*;
+import org.wickedsource.budgeteer.service.UnknownEntityException;
 import org.wickedsource.budgeteer.service.budget.BudgetTagFilter;
 import org.wickedsource.budgeteer.service.statistics.MonthlyStats;
 
@@ -12,6 +13,7 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -223,7 +225,11 @@ public class RecordService {
     }
 
     public void saveDailyRateForWorkRecord(WorkRecord record) {
-        WorkRecordEntity entity = workRecordRepository.findOne(record.getId());
+        Optional<WorkRecordEntity> entityOptional = workRecordRepository.findById(record.getId());
+        if (!entityOptional.isPresent()) {
+            throw new UnknownEntityException(WorkRecordEntity.class, record.getId());
+        }
+        WorkRecordEntity entity = entityOptional.get();
         entity.setDailyRate(record.getDailyRate());
         entity.setEditedManually(record.isEditedManually());
         workRecordRepository.save(entity);

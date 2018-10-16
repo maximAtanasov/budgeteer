@@ -89,11 +89,7 @@ public class PlanRecordDatabaseImporter extends RecordDatabaseImporter {
         Map<RecordKey, List<ImportedPlanRecord>> result = new HashMap<RecordKey, List<ImportedPlanRecord>>();
         for (ImportedPlanRecord record : records) {
             RecordKey key = new RecordKey(record.getPersonName(), record.getBudgetName(), record.getDailyRate());
-            List<ImportedPlanRecord> keyList = result.get(key);
-            if (keyList == null) {
-                keyList = new ArrayList<ImportedPlanRecord>();
-                result.put(key, keyList);
-            }
+            List<ImportedPlanRecord> keyList = result.computeIfAbsent(key, k -> new ArrayList<ImportedPlanRecord>());
             keyList.add(record);
         }
         return result;
@@ -136,8 +132,8 @@ public class PlanRecordDatabaseImporter extends RecordDatabaseImporter {
                 }
             }
         }
-        if(entitiesToImport != null && !entitiesToImport.isEmpty()) {
-            planRecordRepository.save(entitiesToImport);
+        if(!entitiesToImport.isEmpty()) {
+            planRecordRepository.saveAll(entitiesToImport);
 
             // updating start and end date for import record
             if (getImportRecord().getStartDate() == null || getImportRecord().getStartDate().after(earliestDate)) {
