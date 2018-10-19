@@ -73,13 +73,11 @@ public class InvoiceService {
     }
 
     public long save(InvoiceBaseData invoiceBaseData) {
-        Optional<ContractEntity> contract = contractRepository.findById(invoiceBaseData.getContractId());
-        if (!contract.isPresent()) {
-            throw new UnknownEntityException(ContractEntity.class, invoiceBaseData.getContractId());
-        }
+        ContractEntity contract = contractRepository.findByIdInvoiceField(invoiceBaseData.getInvoiceId());
+
         InvoiceEntity invoiceEntity = new InvoiceEntity();
         invoiceEntity.setId(0);
-        invoiceEntity.setContract(contract.get());
+        invoiceEntity.setContract(contract);
 
         if(invoiceBaseData.getInvoiceId() != 0){
             Optional<InvoiceEntity> invoice = invoiceRepository.findById(invoiceBaseData.getInvoiceId());
@@ -125,7 +123,7 @@ public class InvoiceService {
                     // see if the Project already contains a field with this name. If not, create a new one
                     ContractInvoiceField contractInvoiceField = contractRepository.findInvoiceFieldByName(invoiceBaseData.getContractId(), fields.getName().trim());
                     if (contractInvoiceField == null) {
-                        contractInvoiceField = new ContractInvoiceField(0, fields.getName().trim(), contract.get());
+                        contractInvoiceField = new ContractInvoiceField(0, fields.getName().trim(), contract);
                     }
                     InvoiceFieldEntity field = new InvoiceFieldEntity();
                     field.setId(0);

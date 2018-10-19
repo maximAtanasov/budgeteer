@@ -110,7 +110,7 @@ class InvoiceServiceTest extends ServiceIntegrationTestTemplate {
      * Update a Invoice
      */
     @Test
-    @DatabaseSetup("invoiceTest.xml")
+    @DatabaseSetup(value = "invoiceTest.xml")
     @DatabaseTearDown(value = "invoiceTest.xml", type = DatabaseOperation.DELETE_ALL)
     void testUpdateInvoice() {
         InvoiceBaseData testObject = getDummyInvoice();
@@ -212,7 +212,7 @@ class InvoiceServiceTest extends ServiceIntegrationTestTemplate {
 
     private InvoiceBaseData getDummyInvoice() {
         InvoiceBaseData result = new InvoiceBaseData();
-        result.setInvoiceId(0);
+        //result.setInvoiceId(0);
         result.setPaidDate(null);
         result.setContractId(1);
         result.setContractName("Test");
@@ -226,8 +226,8 @@ class InvoiceServiceTest extends ServiceIntegrationTestTemplate {
     }
 
     private List<DynamicAttributeField> getDummyDynamicInvoiceFields() {
-        List<DynamicAttributeField> result = new LinkedList<DynamicAttributeField>();
-        DynamicAttributeField data = new DynamicAttributeField();
+        List<DynamicAttributeField> result = new LinkedList<>();
+        DynamicAttributeField data;
         for (int i = 0; i < 5; i++) {
             data = new DynamicAttributeField();
             data.setName("test" + i);

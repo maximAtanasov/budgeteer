@@ -119,12 +119,16 @@ public class ContractService {
                 // Create a new Attribute
                 if (!attributeFound) {
                     // see if the Project already contains a field with this name. If not, create a new one
-                    ProjectContractField projectContractField = projectRepository.findContractFieldByName(contractBaseData.getProjectId(), fields.getName().trim());
-                    if (projectContractField == null) {
-                        projectContractField = new ProjectContractField(0, fields.getName().trim(), project.get());
+                    ProjectEntity projectEntity = projectRepository.findById(contractBaseData.getProjectId()).get();
+                    ProjectContractField projectContractField = new ProjectContractField(0, fields.getName().trim(), project.get());;
+                    for(ProjectContractField pcf : projectEntity.getContractFields()){
+                        if(pcf.getFieldName().equals(fields.getName())){
+                            projectContractField = new ProjectContractField(pcf.getId(), pcf.getFieldName(), pcf.getProject());
+                        }
                     }
                     ContractFieldEntity field = new ContractFieldEntity();
                     field.setId(0);
+                    field.setContract(contractEntity);
                     field.setField(projectContractField);
                     field.setValue(fields.getValue() == null ? "" : fields.getValue().trim());
                     contractEntity.getContractFields().add(field);
@@ -132,7 +136,6 @@ public class ContractService {
             }
         }
         contractRepository.save(contractEntity);
-
         return contractEntity.getId();
     }
 
@@ -152,7 +155,7 @@ public class ContractService {
 
     @PreAuthorize("canReadContract(#contractId)")
     public List<Date> getMonthList(long contractId) {
-        List<Date> months = new ArrayList<Date>();
+        List<Date> months = new ArrayList<>();
         ContractEntity contract = contractRepository.findByIdInvoiceField(contractId);
         Calendar cal = Calendar.getInstance();
         cal.setTime(contract.getStartDate());

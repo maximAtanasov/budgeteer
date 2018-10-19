@@ -69,7 +69,7 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
         assertTrue(savedContract.getContractId() > 0);
         assertEquals(5, savedContract.getContractAttributes().size());
 
-        assertEquals(5, projectRepository.findById(savedContract.getProjectId()).get().getContractFields().size());
+        assertEquals(5, projectRepository.findByIdContractFields(savedContract.getProjectId()).getContractFields().size());
     }
 
     /**
@@ -94,7 +94,7 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
         assertTrue(savedContract.getContractId() > 0);
         assertEquals(5, savedContract.getContractAttributes().size());
 
-        assertEquals(5, projectRepository.findById(savedContract.getProjectId()).get().getContractFields().size());
+        assertEquals(5, projectRepository.findByIdContractFields(savedContract.getProjectId()).getContractFields().size());
     }
 
     /**
@@ -137,7 +137,7 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
             assertTrue(found);
         }
         assertEquals(1, savedContract.getBelongingBudgets().size());
-        assertEquals(6, projectRepository.findById(savedContract.getProjectId()).get().getContractFields().size());
+        assertEquals(6, projectRepository.findByIdContractFields(savedContract.getProjectId()).getContractFields().size());
     }
 
     /**
@@ -181,7 +181,7 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
             assertTrue(found);
         }
         assertEquals(0, savedContract.getBelongingBudgets().size());
-        assertEquals(7, projectRepository.findById(savedContract.getProjectId()).get().getContractFields().size());
+        assertEquals(7, projectRepository.findByIdContractFields(savedContract.getProjectId()).getContractFields().size());
     }
 
     @Test
@@ -233,10 +233,9 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
     }
 
     private List<DynamicAttributeField> getListOfContractFields() {
-        List<DynamicAttributeField> result = new LinkedList<DynamicAttributeField>();
-        DynamicAttributeField data = new DynamicAttributeField();
+        List<DynamicAttributeField> result = new LinkedList<>();
         for(int i = 0; i < 5; i++) {
-            data = new DynamicAttributeField();
+            DynamicAttributeField data = new DynamicAttributeField();
             data.setName("test" + i);
             data.setValue("test" + i);
             result.add(data);
@@ -256,8 +255,4 @@ class ContractServiceTest extends ServiceIntegrationTestTemplate {
         assertEquals(contractRepository.findContractFieldsByContractId(4L).size(), 1);
         assertNull(service.getContractById(3));
     }
-
-
-
-
 }
