@@ -120,7 +120,7 @@ public class ContractService {
                 if (!attributeFound) {
                     // see if the Project already contains a field with this name. If not, create a new one
                     ProjectEntity projectEntity = projectRepository.findById(contractBaseData.getProjectId()).get();
-                    ProjectContractField projectContractField = new ProjectContractField(0, fields.getName().trim(), project.get());;
+                    ProjectContractField projectContractField = new ProjectContractField(0, fields.getName().trim(), project.get());
                     for(ProjectContractField pcf : projectEntity.getContractFields()){
                         if(pcf.getFieldName().equals(fields.getName())){
                             projectContractField = new ProjectContractField(pcf.getId(), pcf.getFieldName(), pcf.getProject());
