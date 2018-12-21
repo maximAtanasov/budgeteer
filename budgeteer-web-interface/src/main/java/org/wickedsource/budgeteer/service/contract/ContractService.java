@@ -96,29 +96,30 @@ public class ContractService {
 
         //update additional information of the current contract
         for (DynamicAttributeField fields : contractBaseData.getContractAttributes()) {
-            if (fields.getValue() != null && !fields.getValue().isEmpty()) {
-                boolean attributeFound = false;
-                //see, if the attribute already exists -> Update the value
-                for (ContractFieldEntity contractFieldEntity : contractEntity.getContractFields()) {
-                    if (contractFieldEntity.getField().getFieldName().equals(fields.getName().trim())) {
-                        contractFieldEntity.setValue(fields.getValue());
-                        attributeFound = true;
-                        break;
-                    }
+            if(fields.getValue() == null){
+                fields.setValue("");
+            }
+            boolean attributeFound = false;
+            //see, if the attribute already exists -> Update the value
+            for (ContractFieldEntity contractFieldEntity : contractEntity.getContractFields()) {
+                if (contractFieldEntity.getField().getFieldName().equals(fields.getName().trim())) {
+                    contractFieldEntity.setValue(fields.getValue());
+                    attributeFound = true;
+                    break;
                 }
-                // Create a new Attribute
-                if (!attributeFound) {
-                    // see if the Project already contains a field with this name. If not, create a new one
-                    ProjectContractField projectContractField = projectRepository.findContractFieldByName(contractBaseData.getProjectId(), fields.getName().trim());
-                    if (projectContractField == null) {
-                        projectContractField = new ProjectContractField(0, fields.getName().trim(), project);
-                    }
-                    ContractFieldEntity field = new ContractFieldEntity();
-                    field.setId(0);
-                    field.setField(projectContractField);
-                    field.setValue(fields.getValue() == null ? "" : fields.getValue().trim());
-                    contractEntity.getContractFields().add(field);
+            }
+            // Create a new Attribute
+            if (!attributeFound) {
+                // see if the Project already contains a field with this name. If not, create a new one
+                ProjectContractField projectContractField = projectRepository.findContractFieldByName(contractBaseData.getProjectId(), fields.getName().trim());
+                if (projectContractField == null) {
+                    projectContractField = new ProjectContractField(0, fields.getName().trim(), project);
                 }
+                ContractFieldEntity field = new ContractFieldEntity();
+                field.setId(0);
+                field.setField(projectContractField);
+                field.setValue(fields.getValue() == null ? "" : fields.getValue().trim());
+                contractEntity.getContractFields().add(field);
             }
         }
         contractRepository.save(contractEntity);
