@@ -1,6 +1,7 @@
 package org.wickedsource.budgeteer.web.pages.contract.edit.form;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxButton;
 import org.apache.wicket.injection.Injector;
 import org.apache.wicket.markup.html.WebMarkupContainer;
@@ -102,6 +103,15 @@ public class EditContractForm extends Form<ContractBaseData> {
             @Override
             protected void populateItem(ListItem<DynamicAttributeField> item) {
                 item.add(new Label("attributeTitle", item.getModelObject().getName()));
+                item.add(new AjaxLink("removeAttribute") {
+                    @Override
+                    public void onClick(AjaxRequestTarget target) {
+                        if(!service.deleteContractField(item.getModelObject(), BudgeteerSession.get().getProjectId())){
+                            feedbackPanel.error("Cannot delete this attribute as it is in use by other contracts!");
+                        }
+                        target.add(EditContractForm.this);
+                    }
+                });
                 item.add(new TextField<>("attributeValue", model(from(item.getModelObject()).getValue())));
             }
         });

@@ -120,6 +120,10 @@ public interface ContractRepository extends CrudRepository<ContractEntity, Long>
     @Query("delete from ContractFieldEntity c where c.id in (select s.id from ContractFieldEntity s where  s.field.project.id = :projectId)")
     void deleteContractFieldByProjectId(@Param("projectId") long projectId);
 
+    @Modifying
+    @Query("delete from ContractFieldEntity c where c.id in (select s.id from ContractFieldEntity s where s.field.fieldName like :fieldName and s.field.project.id = :projectId)")
+    void deleteContractFieldByProjectIdAndFieldName(@Param("projectId") long projectId, @Param("fieldName") String fieldName);
+
     @Query("Select e from ContractFieldEntity e where e.contract.id = :contractID")
     List<ContractFieldEntity> findContractFieldsByContractId(@Param("contractID") Long contractID);
 

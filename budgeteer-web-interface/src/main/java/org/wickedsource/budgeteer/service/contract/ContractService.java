@@ -17,6 +17,7 @@ import org.wickedsource.budgeteer.web.pages.contract.overview.table.ContractOver
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 @Transactional
@@ -108,6 +109,7 @@ public class ContractService {
                     break;
                 }
             }
+
             // Create a new Attribute
             if (!attributeFound) {
                 // see if the Project already contains a field with this name. If not, create a new one
@@ -121,6 +123,21 @@ public class ContractService {
                 field.setValue(fields.getValue() == null ? "" : fields.getValue().trim());
                 contractEntity.getContractFields().add(field);
             }
+
+            //Delete any missing fields
+            List <ContractFieldEntity> updatedEntities = new ArrayList<>();
+            for (ContractFieldEntity contractFieldEntity : contractEntity.getContractFields()) {
+                boolean found = false;
+                for(DynamicAttributeField dynField : contractBaseData.getContractAttributes()){
+                    if (contractFieldEntity.getField().getFieldName().equals(dynField.getName().trim())) {
+                        found = true;
+                    }
+                }
+                if(found){
+                    updatedEntities.add(contractFieldEntity);
+                }
+            }
+            contractEntity.getContractFields().removeIf(updatedEntities::contains);
         }
         contractRepository.save(contractEntity);
 
@@ -182,5 +199,23 @@ public class ContractService {
     public boolean projectHasContracts(long projectId) {
         List<ContractEntity> contracts = contractRepository.findByProjectId(projectId);
         return (null != contracts && !contracts.isEmpty());
+    }
+
+    public boolean deleteContractField(DynamicAttributeField field, long projectId) {
+        for(ContractBaseData contract : getContractsByProject(projectId)){
+            for(DynamicAttributeField attField : contract.getContractAttributes()){
+                if(attField.getName().equals(field.getName())){
+                    if(!attField.getValue().isEmpty()){
+                        return false; //If a non empty field is found - do no delete anything and just return.
+                    }else{
+                        contract.getContractAttributes().remove(field);
+                        save(contract);
+                        contractRepository.deleteContractFieldByProjectIdAndFieldName(projectId, field.getName());
+                        break;
+                    }
+                }
+            }
+        }
+        return true;
     }
 }
